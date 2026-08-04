@@ -1,48 +1,43 @@
 using Microsoft.EntityFrameworkCore;
 using MonApi.Data;
 
+// Crée le "constructeur" de l'application, point de départ 
 var builder = WebApplication.CreateBuilder(args);
 
+// ───── SERVICES (préparés une fois, au démarrage) ─────
+
+// Active le support des Controllers 
 builder.Services.AddControllers();
+
+// Nécessaire pour que Swagger puisse explorer/lister toutes tes routes
 builder.Services.AddEndpointsApiExplorer();
+
+// Génère automatiquement la documentation Swagger de l' API
 builder.Services.AddSwaggerGen();
 
+// Enregistre le DbContext : chaque Controller pourra le recevoir automatiquement
+// (injection de dépendances), déjà connecté à PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+// Construit l'application à partir de toute la config ci-dessus
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ───── PIPELINE (exécuté à CHAQUE requête, dans cet ordre) ─────
+
+// Seulement en développement : active l'interface Swagger (page /swagger)
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+// Redirige automatiquement les requêtes HTTP vers HTTPS
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Active le routing : redirige chaque requête vers le bon Controller/méthode
+// selon les attributs [Route]/[HttpGet]/[HttpPost] écrits dans tes Controllers
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+// Démarre réellement le serveur, qui commence à écouter les requêtes
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
