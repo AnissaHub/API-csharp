@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MonApi.Data;
 using MonApi.Models;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace MonApi.Controllers;
 
@@ -17,6 +19,7 @@ public class ProduitsController : ControllerBase
         _context = context;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> ObtenirTous()
     {
@@ -60,7 +63,7 @@ public class ProduitsController : ControllerBase
 
 
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
 
     public async Task<IActionResult> remove(int id)
