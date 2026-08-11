@@ -11,4 +11,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Produit> Produits { get; set; }
     public DbSet<Utilisateur> Utilisateurs { get; set; }
+    public DbSet<Commande> Commandes { get; set; }
+    public DbSet<LigneCommande> LigneCommandes { get; set; }
+
+
 }
